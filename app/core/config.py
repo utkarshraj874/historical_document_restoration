@@ -23,4 +23,3 @@ MISTRAL_API_KEY = os.getenv(
     "MISTRAL_API_KEY"
 )
 
-print("CONFIG LOADED: ", DATABASE_URL)

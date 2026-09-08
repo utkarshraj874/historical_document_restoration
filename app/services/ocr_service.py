@@ -1,16 +1,28 @@
 
 import time
-from paddleocr import PaddleOCR
+
+
+class OCRUnavailableError(RuntimeError):
+    """Raised when the optional PaddleOCR runtime is not available."""
 
 
 class OCRService:
 
     def __init__(self):
+        # Import PaddleOCR only when an OCR request is made.  Importing it at
+        # module load time prevents the entire FastAPI application from
+        # starting when a serverless deployment does not include PaddleOCR.
+        try:
+            from paddleocr import PaddleOCR
+        except ModuleNotFoundError as exc:
+            if exc.name == "paddleocr":
+                raise OCRUnavailableError(
+                    "OCR is not available in this deployment because the "
+                    "PaddleOCR runtime is not installed."
+                ) from exc
+            raise
 
-        self.ocr = PaddleOCR(
-            lang="en",
-            device="cpu"
-        )
+        self.ocr = PaddleOCR(lang="en", device="cpu")
 
     def process_image(self, image_path: str):
 

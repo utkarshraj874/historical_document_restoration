@@ -12,7 +12,7 @@ from app.core.dependencies import (
 )
 
 from app.services.image_service import preprocess_image
-from app.services.ocr_service import OCRService
+from app.services.ocr_service import OCRService, OCRUnavailableError
 from app.services.ocr_visualization_service import (
     create_ocr_visualization
 )
@@ -102,6 +102,13 @@ def run_ocr(
             "Total OCR detections:",
             len(ocr_data["detections"])
         )
+
+    except OCRUnavailableError as e:
+
+        raise HTTPException(
+            status_code=503,
+            detail=str(e)
+        ) from e
 
     except Exception as e:
 

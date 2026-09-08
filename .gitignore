@@ -13,5 +13,9 @@ __pycache__/
 # Logs
 *.log
 
+# Runtime uploads are not source files. Serverless filesystems are ephemeral;
+# production uploads should be stored in object storage.
+uploads/
+
 # Streamlit cache
 .streamlit/

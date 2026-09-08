@@ -77,6 +77,23 @@ Code
 DATABASE_URL=postgresql+psycopg2://postgres:<password>@localhost:5432/historical_document
 MISTRAL_API_KEY=<your-mistral-api-key>
 SECRET_KEY=<your-secret-key>
+
+### Vercel deployment
+
+Set `DATABASE_URL`, `SECRET_KEY`, and `GROQCLOUD_API_KEY` in the Vercel
+project's Environment Variables. `DATABASE_URL` must point to an externally
+reachable PostgreSQL instance; `localhost` only works on your computer.
+
+PaddleOCR is included in `requirements.txt`. After pushing this change,
+redeploy the same branch and use **Redeploy without cache** so Vercel installs
+the current requirements file. If PaddleOCR cannot be packaged by your Vercel
+plan, the rest of the API still starts and the OCR endpoint responds with 503;
+run the OCR worker in the provided Docker deployment or another compute
+service in that case.
+
+Vercel function storage is temporary. Do not rely on `uploads/` for
+production document storage; use object storage for uploaded files.
+
 Run migrations:
 
 bash
