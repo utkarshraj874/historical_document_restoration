@@ -1,0 +1,37 @@
+services:
+
+  db:
+    image: postgres:16
+    container_name: historical_document_db
+
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: historical_document
+
+    ports:
+      - "5432:5432"
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+
+  api:
+    build: .
+    container_name: historical_document_api
+
+    ports:
+      - "8000:8000"
+
+    env_file:
+      - .env
+
+    volumes:
+      - ./uploads:/app/uploads
+
+    depends_on:
+      - db
+
+
+volumes:
+  postgres_data:
