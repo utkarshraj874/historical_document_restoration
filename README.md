@@ -80,9 +80,23 @@ SECRET_KEY=<your-secret-key>
 
 ### Vercel deployment
 
-Set `DATABASE_URL`, `SECRET_KEY`, and `GROQCLOUD_API_KEY` in the Vercel
-project's Environment Variables. `DATABASE_URL` must point to an externally
-reachable PostgreSQL instance; `localhost` only works on your computer.
+Set these in the Vercel project's Environment Variables:
+
+- `DATABASE_URL` — an externally reachable PostgreSQL connection string.
+  `localhost` only works on your computer.
+- `SECRET_KEY` — a long random value used to sign JWTs.
+- `GROQCLOUD_API_KEY` — the API key used for text restoration.
+- `BLOB_READ_WRITE_TOKEN` — added automatically when you create and connect a
+  **public Vercel Blob** store in the project Storage tab. It makes uploaded
+  and enhanced images durable across serverless invocations.
+
+Then import the repository in Vercel (Framework Preset: **Other**) and deploy.
+Vercel detects `app/main.py` as the FastAPI application. The deployment uses
+Python 3.12 and allows OCR requests to run for up to 300 seconds.
+
+`vercel.json` is intentionally comment-free because JSON does not support
+comments. Its `excludeFiles` rule keeps development files out of the function,
+and `maxDuration: 300` gives OCR enough processing time.
 
 PaddleOCR is included in `requirements.txt`. After pushing this change,
 redeploy the same branch and use **Redeploy without cache** so Vercel installs
@@ -91,8 +105,10 @@ plan, the rest of the API still starts and the OCR endpoint responds with 503;
 run the OCR worker in the provided Docker deployment or another compute
 service in that case.
 
-Vercel function storage is temporary. Do not rely on `uploads/` for
-production document storage; use object storage for uploaded files.
+Without `BLOB_READ_WRITE_TOKEN`, uploads fall back to a temporary function
+directory and are suitable only for local development. Vercel Function request
+bodies are limited to 4.5 MB, so use client-side Blob uploads if documents can
+exceed that limit.
 
 Run migrations:
 

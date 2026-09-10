@@ -1,5 +1,3 @@
-import os
-import shutil
 from datetime import datetime
 
 from fastapi import APIRouter, Depends, UploadFile, File, Form, HTTPException
@@ -8,6 +6,7 @@ from sqlalchemy.orm import Session
 from app.models.user import User
 from app.models.document import Document
 from app.core.dependencies import get_db, get_current_user
+from app.services.storage_service import store_upload  # Uses Vercel Blob in production.
 
 router = APIRouter()
 
@@ -20,17 +19,11 @@ def upload_document(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    upload_dir = "uploads"
-    os.makedirs(upload_dir, exist_ok=True)
-
-    file_path = os.path.join(upload_dir, file.filename)
-    
-    
-    
+    file_path = None
     try:
-        # Save file
-        with open(file_path, "wb") as buffer:
-            shutil.copyfileobj(file.file, buffer)
+        # Uploads go to durable Vercel Blob when its token is configured;
+        # local development continues to use the uploads folder.
+        file_path = store_upload(file)
 
         # Save metadata
         doc = Document(
@@ -56,9 +49,6 @@ def upload_document(
         db.rollback()
 
         # Remove file if DB operation failed
-        if os.path.exists(file_path):
-            os.remove(file_path)
-
         raise HTTPException(
             status_code=500,
             detail=str(e),

@@ -13,6 +13,9 @@ from app.core.dependencies import (
 
 from app.services.image_service import preprocess_image
 from app.services.ocr_service import OCRService, OCRUnavailableError
+# Blob URLs must be downloaded before OpenCV/PaddleOCR can process them; the
+# generated image is then written back to Blob for durable access.
+from app.services.storage_service import materialize_for_processing, store_generated_file
 from app.services.ocr_visualization_service import (
     create_ocr_visualization
 )
@@ -66,9 +69,9 @@ def run_ocr(
 
     try:
 
-        enhanced_image_path = preprocess_image(
-            doc.file_path
-        )
+        # Convert a Blob URL to a temporary local file when deployed on Vercel.
+        source_image_path = materialize_for_processing(doc.file_path)
+        enhanced_image_path = preprocess_image(source_image_path)
 
         print(
             "Enhanced image:",
@@ -96,6 +99,9 @@ def run_ocr(
             enhanced_image_path
         )
 
+        # Keep the enhanced image after this serverless request finishes.
+        stored_enhanced_image_path = store_generated_file(enhanced_image_path)
+
         print("OCR completed")
 
         print(
@@ -103,12 +109,6 @@ def run_ocr(
             len(ocr_data["detections"])
         )
 
-    except OCRUnavailableError as e:
-
-        raise HTTPException(
-            status_code=503,
-            detail=str(e)
-        ) from e
 
     except Exception as e:
 
@@ -165,7 +165,7 @@ def run_ocr(
 
             corrected_text=None,
 
-            enhanced_image=enhanced_image_path,
+            enhanced_image=stored_enhanced_image_path,
 
             average_confidence=(
                 ocr_data["average_confidence"]
@@ -181,9 +181,9 @@ def run_ocr(
         db.add(ocr_result)
 
         db.flush()
-
+  #send the pending chnages to the dataabse immeediately , but dont commit the transcation yet 
     except Exception as e:
-
+    # rollbacK cancel uncomited changes  
         db.rollback()
 
         print(
