@@ -1,0 +1,6 @@
+# Use this file only for the Docker/local OCR worker. PaddleOCR pulls in the
+# large PaddleX model/runtime stack, which exceeds Vercel's standard function
+# bundle limit. The Vercel API intentionally installs requirements.txt instead.
+-r requirements.txt
+paddleocr==3.7.0
+paddlepaddle==3.2.0

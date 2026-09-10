@@ -110,6 +110,18 @@ def run_ocr(
         )
 
 
+    # Vercel intentionally excludes PaddleOCR to meet its function-size limit.
+    # Tell the client this is a deployment capability issue, not a bad image.
+    except OCRUnavailableError as e:
+
+        raise HTTPException(
+            status_code=503,
+            detail=(
+                f"{e} Run OCR through the Docker OCR deployment or another "
+                "compute service."
+            )
+        ) from e
+
     except Exception as e:
 
         print("OCR ERROR:", str(e))

@@ -16,12 +16,13 @@ RUN apt-get update && apt-get install -y \
     g++ \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements
-COPY requirements.txt .
+# The OCR Docker service needs the large PaddleOCR runtime. Vercel installs the
+# lighter requirements.txt file and therefore stays below its bundle limit.
+COPY requirements.txt requirements.ocr.txt ./
 
 # Install Python packages
 RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir -r requirements.txt
+    pip install --no-cache-dir -r requirements.ocr.txt
 
 # Copy complete project
 COPY . .

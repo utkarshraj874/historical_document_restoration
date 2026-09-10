@@ -98,12 +98,15 @@ Python 3.12 and allows OCR requests to run for up to 300 seconds.
 comments. Its `excludeFiles` rule keeps development files out of the function,
 and `maxDuration: 300` gives OCR enough processing time.
 
-PaddleOCR is included in `requirements.txt`. After pushing this change,
-redeploy the same branch and use **Redeploy without cache** so Vercel installs
-the current requirements file. If PaddleOCR cannot be packaged by your Vercel
-plan, the rest of the API still starts and the OCR endpoint responds with 503;
-run the OCR worker in the provided Docker deployment or another compute
-service in that case.
+PaddleOCR is deliberately **not** included in `requirements.txt`: its
+PaddlePaddle/PaddleX runtime makes the deployment about 1.2 GB, above Vercel's
+standard 500 MB Python Function limit. The Vercel API deploys without it and
+returns HTTP 503 from the OCR endpoint with an explanation. The complete OCR
+runtime is in `requirements.ocr.txt`; the supplied Dockerfile installs that
+file, so use the Docker deployment (or a separate worker service) for OCR.
+
+After pushing this change, redeploy the same branch using **Redeploy without
+cache** so Vercel discards the previous oversized dependency bundle.
 
 Without `BLOB_READ_WRITE_TOKEN`, uploads fall back to a temporary function
 directory and are suitable only for local development. Vercel Function request
