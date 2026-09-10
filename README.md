@@ -108,6 +108,25 @@ file, so use the Docker deployment (or a separate worker service) for OCR.
 After pushing this change, redeploy the same branch using **Redeploy without
 cache** so Vercel discards the previous oversized dependency bundle.
 
+### Streamlit UI deployment
+
+Vercel deploys this repository as a **FastAPI API**, not as the Streamlit
+interface. Opening the Vercel URL in a browser previously sent a `GET /` to an
+API route that accepted only `POST`, which is why it returned `405 Method Not
+Allowed`. `GET /` now returns an API health message and `/docs` opens the API
+documentation.
+
+Deploy the UI separately on Streamlit Community Cloud:
+
+1. Create an app from this repository and select `app/streamlit_ui.py` as its
+   entrypoint.
+2. In the app's Secrets settings, add
+   `API_URL = "https://your-vercel-project.vercel.app"`.
+3. Deploy and open the resulting `streamlit.app` URL.
+
+The UI-specific dependency file is [app/requirements.txt](app/requirements.txt),
+so Streamlit Cloud installs only its own small dependency set.
+
 Without `BLOB_READ_WRITE_TOKEN`, uploads fall back to a temporary function
 directory and are suitable only for local development. Vercel Function request
 bodies are limited to 4.5 MB, so use client-side Blob uploads if documents can

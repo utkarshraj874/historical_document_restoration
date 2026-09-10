@@ -12,7 +12,13 @@ import requests
 import streamlit as st
 from PIL import Image
 
-API_URL = os.getenv("API_URL", "http://127.0.0.1:8001").rstrip("/")
+# Streamlit Community Cloud supplies this via Secrets; os.getenv keeps local
+# development simple. Point it to the Vercel FastAPI deployment URL.
+try:
+    API_URL = str(st.secrets["API_URL"])
+except (KeyError, FileNotFoundError):
+    API_URL = os.getenv("API_URL", "http://127.0.0.1:8001")
+API_URL = API_URL.rstrip("/")
 REQUEST_TIMEOUT = 120
 
 st.set_page_config(page_title="Archive Restore", page_icon="📜", layout="wide")

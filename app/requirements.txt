@@ -1,0 +1,6 @@
+# Dependencies for the separately deployed Streamlit UI (app/streamlit_ui.py).
+# Keeping this next to the entrypoint prevents Streamlit Cloud from installing
+# the API/OCR dependencies that are unnecessary for the browser interface.
+streamlit==1.63.0
+requests==2.34.2
+Pillow==12.3.0

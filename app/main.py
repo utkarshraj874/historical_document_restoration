@@ -7,10 +7,14 @@ from app.services.storage_service import local_upload_directory
 
 app = FastAPI(title = "HISTORICAL_DOCUMENT_RESTORATION" )
 
-@app.post("/")
+# A browser requests the deployment URL with GET. Keeping POST also preserves
+# the original API behaviour for any existing client that used that method.
+@app.api_route("/", methods=["GET", "POST"], tags=["Health"])
 def root():
     return {
-        "message":"project started "
+        "message": "Historical Document Restoration API is running.",
+        "docs": "/docs",
+        "streamlit_ui": "Deploy app/streamlit_ui.py separately; it is not served by this API."
     }
 # Vercel's project directory is read-only; this resolves a writable runtime
 # folder for local-only uploads when Blob storage has not been configured.
